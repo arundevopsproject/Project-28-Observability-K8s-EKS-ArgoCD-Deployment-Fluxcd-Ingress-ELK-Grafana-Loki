@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ep-test
+  labels:
+    app: nginx
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+      #App container
+      - name: nginx-container
+        image: nginx:latest
+        ports:
+          - containerPort: 80
+        volumeMounts:
+          - name: logs
+            mountPath: /var/log/nginx
+      #This si extra container
+      - name: sidecar-container
+        image: busybox
+        command: ["/bin/sh"]
+        args: ["-c", "tail -f /var/log/nginx/access.log"]
+        volumeMounts:
+          - name: logs
+            mountPath: /var/log/nginx
+      volumes:
+        - name: logs
+          emptyDir: {}
